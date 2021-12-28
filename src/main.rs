@@ -1,11 +1,9 @@
 use std::{fs, io};
-use std::env;
-use std::path::{Path, PathBuf};
-use std::process::Command;
 
-use lnk::ShellLink;
+use std::path::{Path, PathBuf};
+
 use powershell_script::run;
-use structopt::clap::Shell;
+
 use structopt::StructOpt;
 use structopt_derive::StructOpt;
 
@@ -28,9 +26,9 @@ fn get_input() -> String {
 }
 
 fn get_tag_dir() -> PathBuf {
-    let homeDir = dirs::home_dir().unwrap();
-    let homeDirTagsPathBuf = homeDir.join(&TAG_FOLDER);
-    return homeDirTagsPathBuf;
+    let home_dir = dirs::home_dir().unwrap();
+    let home_dir_tags_path_buf = home_dir.join(&TAG_FOLDER);
+    return home_dir_tags_path_buf;
 }
 
 
@@ -42,7 +40,7 @@ fn add_to_quickaccess() {
         let mut process = Command::new("powershell")
             .args(["-Command", &*command]);*/
     match run(&*command, false) {
-        Ok(output) => {
+        Ok(_output) => {
             //println!("{}", output);
         }
         Err(e) => {
@@ -58,47 +56,50 @@ fn main() {
     let splitted: Vec<String> = path.split("\\").map(|x| x.to_string()).collect();
     let length = splitted.len();
 
-    let folderName = &splitted[length - 1];
-    println!("Target name: {}", folderName);
+    let folder_name = &splitted[length - 1];
+    println!("Target name: {}", folder_name);
     println!("Target path: {}", path);
     println!("Please enter Tag name:");
-    let tagName = get_input().to_lowercase();
+    let tag_name = get_input().to_lowercase();
 
-    let homeDir = dirs::home_dir().unwrap();
-    let homeDirTagsPathBuf = homeDir.join(&TAG_FOLDER);
-    let tagFolder = homeDirTagsPathBuf.as_path();
-    let targetPath = Path::new(&path);
-    let tagTargetPathBuf = tagFolder.join(&tagName);
-    let mut tagTarget = tagTargetPathBuf.as_path();
+    let home_dir = dirs::home_dir().unwrap();
+    let home_dir_tags_path_buf = home_dir.join(&TAG_FOLDER);
+    let tag_folder = home_dir_tags_path_buf.as_path();
+    let target_path = Path::new(&path);
+    let tag_target_path_buf = tag_folder.join(&tag_name);
+    let tag_target = tag_target_path_buf.as_path();
+    let link_file_name = format!("{}", &folder_name);
+
+    let error_option = fs::create_dir_all(tag_target).err();
+    if error_option.is_some() {
+        let error = error_option.unwrap();
+        panic!("{}", error);
+    }
 
 
-    let linkFileName = format!("{}", &folderName);
-    let linkPathBuf = tagTarget.join(&linkFileName);
-    let linkPath = linkPathBuf.as_path();
-    fs::create_dir_all(tagTarget);
     add_to_quickaccess();
-    let buf = create_link(&tagTarget, &linkFileName);
-    if targetPath.is_dir() {
-        let result = std::os::windows::fs::symlink_dir(&targetPath, &buf);
+    let buf = create_link(&tag_target, &link_file_name);
+    if target_path.is_dir() {
+        let result = std::os::windows::fs::symlink_dir(&target_path, &buf);
         println!("{:?}", result.err());
     }
-    if targetPath.is_file() {
-        let result = std::os::windows::fs::symlink_file(&targetPath, &buf);
+    if target_path.is_file() {
+        let result = std::os::windows::fs::symlink_file(&target_path, &buf);
         println!("{:?}", result.err());
     }
 }
 
-fn create_link(tagTarget: &Path, linkName: &String) -> PathBuf {
-    let linkPathOrig = tagTarget.join(linkName);
-    let mut linkPath = linkPathOrig.clone();
+fn create_link(tag_target: &Path, link_name: &String) -> PathBuf {
+    let link_path_orig = tag_target.join(link_name);
+    let mut link_path = link_path_orig.clone();
 
     let mut iterator = 1;
-    while linkPath.exists() {
-        let name = format!("{}{}", linkName, format!("-{}", iterator));
-        linkPath = tagTarget.join(name);
+    while link_path.exists() {
+        let name = format!("{}{}", link_name, format!("-{}", iterator));
+        link_path = tag_target.join(name);
         iterator += 1;
     }
 
-    return linkPath;
+    return link_path;
 }
 
