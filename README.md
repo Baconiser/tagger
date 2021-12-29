@@ -18,3 +18,5 @@ It then prompts you to enter the tag.
 If the tag exists in the Tag folder it adds the symlink otherwise the tag will be created as a directory and the symlink created.
 
 I added it to my rightclick menu for simpler usage.
+
+Maybe some day we will have something like this: https://www.figma.com/proto/BnLaN5paOn40xOEMfCDaaN/Untitled?page-id=0%3A1&node-id=2%3A57&viewport=241%2C48%2C0.15&scaling=contain&starting-point-node-id=2%3A31
